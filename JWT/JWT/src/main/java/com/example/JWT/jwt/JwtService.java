@@ -17,7 +17,8 @@ import java.util.function.Function;
 
 @Component
 public class JwtService {
-
+    // bana gerektiğinde key oluşturan gerektiğinde keyden
+    // istenilen  bilgileri bana dönen sınıf
     public static final String SECRET_KEY = "AAa57GAIy8Qsgg80e2VXBr7JxCluDuoyXzFUu/Szwus=";
 
     public String generateToken(UserDetails details){
@@ -27,7 +28,7 @@ public class JwtService {
                 .setSubject(details.getUsername())
                 .claims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration((new Date(System.currentTimeMillis() + 1000 * 60 * 2))) // 2 dakika geçerli olacak
+                .setExpiration((new Date(System.currentTimeMillis() + 1000 * 60 * 20))) // 2 dakika geçerli olacak
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -37,12 +38,22 @@ public class JwtService {
             return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    public Claims getClaims(String token){
+        Claims claims = Jwts
+                .parser()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token).getBody();
+        return  claims;
+    }
+
+    public Object getRoleByClaims(String token,String key){
+            Claims claims = getClaims(token);
+            return  claims.get("ROLE");
+    }
+
     public <T> T exporteToken(String token, Function<Claims,T> claimsTFunction){
-            Claims claims = Jwts
-                    .parser()
-                    .setSigningKey(getKey())
-                    .build()
-                    .parseClaimsJws(token).getBody();
+            Claims claims = getClaims(token);
             return claimsTFunction.apply(claims);
     }
 

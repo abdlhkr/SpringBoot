@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtService jwtService;
+    @Autowired
     private UserDetailsService userDetailsService;
 
     @Override
@@ -52,7 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // ile kontrol ediyoruz
                 // kullanıcı ile ilgili bilgiler userDetailse gidiyor
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (userDetails != null && jwtService.isTokenExpired(token)) {
+
+                if (userDetails != null && !jwtService.isTokenExpired(token)) {
                     // burda artık kişiyi security contexte koyabiliriz demek
                     // controller katmanına girdi yani artık
                     UsernamePasswordAuthenticationToken authentication =
